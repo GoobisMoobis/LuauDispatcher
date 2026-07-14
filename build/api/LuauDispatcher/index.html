@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="plugin-moonwave plugin-id-moonwave" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.10.1">
+<title data-rh="true">LuauDispatcher</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://GoobisMoobis.github.io/LuauDispatcher/api/LuauDispatcher"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docusaurus_tag" content="default"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docsearch:docusaurus_tag" content="default"><meta data-rh="true" property="og:title" content="LuauDispatcher"><meta data-rh="true" name="description" content="Executes a Luau AST produced by [LuauParser](https://vantoanvh.github.io/LuauParser/).
+
+On average it is 10% faster than [vLuau](https://github.com/kosuke14/vLuau) and 108x slower than the native roblox engine.
+You can see better benchmark results on the [GitHub page](https://github.com/GoobisMoobis/LuauDispatcher)
+
+Example usage:
+```lua
+local Parser = require(path.to.LuauParser)
+local Dispatcher = require(path.to.LuauDispatcher)
+
+local parseOptions = {
+	-- any options you want to pass to Parser.parse
+	-- ex.
+	allowDeclarationSyntax = true,
+	noErrorLimit = true
+}
+local runtimeOptions = {
+	-- any options you want to pass to Dispatcher.run
+	-- if you do not pass in any options, the default options will be used
+	-- defaults:
+	allowEnvironmentModifications = true,
+	rawGlobalEnabled = true, -- this might be the one you consider disabling
+	overrideCertainGlobalsAtRuntime = true,
+	instructionLimit = 10000000,
+	noEnv = false,
+	allowConsoleOutput = true,
+}
+local code = [[
+	print(&quot;Hello, world!&quot;)
+]]
+
+local success, tree = Parser.parse(code, parseOptions)
+local completion = Dispatcher.run(tree, runtimeOptions)
+if completion.kind == &quot;Normal&quot; then
+	print(&quot;Success!&quot;)
+end
+```
+
+A benefit of LuauDispatcher is, in my opinion, it is a lot easier to interface with than something like vLuau.
+You can add new functions in [LuauDispatcher.globals] if you want the execution environment to have more methods to work with.
+Example:
+
+```lua
+Dispatcher.globals.foo = function()
+	print(&quot;foo&quot;)
+end
+
+local parseOptions = {
+	...
+}
+local runtimeOptions = {
+	...
+}
+local success, tree = Parser.parse(&quot;foo()&quot;, parseOptions)
+Dispatcher.run(tree, runtimeOptions)
+```
+
+Scripts also get access to `rawglobal(name, value)` which will add a global to the environment that will persist across all scripts.
+This can cause issues if you are not careful, so it can be disabled in the runtime options.
+
+Example:
+
+```lua
+local parseOptions = {
+	...
+}
+local runtimeOptions = {
+	...
+}
+local success, tree = Parser.parse(&#x27;rawglobal(&quot;foo&quot;, function() print(&quot;Hello, world!&quot;) end)&#x27;, parseOptions)
+Dispatcher.run(tree, runtimeOptions)
+
+success, tree = Parser.parse(&quot;foo()&quot;, parseOptions)
+Dispatcher.run(tree, runtimeOptions)
+```
+
+Error messages are also heavily customized to be easily readable so you can track the issue better.
+```lua
+local success, tree = Parser.parse(&quot;print(1 + 1&quot;, parseOptions)
+Dispatcher.run(tree, runtimeOptions)
+
+--[[
+	Output:
+	LuauDispatcher:1163: 
+	-----ERROR FOUND-----
+
+	Error 1/1
+	Expected &#x27;)&#x27; (to close &#x27;(&#x27; at column 6), got end of script/file
+	Location: line 1, column 12
+
+	-  Server - LuauError:40
+	Stack Begin  -  Studio
+	Script &#x27;ServerStorage.LuauDispatcher.LuauError&#x27;, Line 40 - function error  -  Studio - LuauError:40
+	Script &#x27;ServerStorage.LuauDispatcher&#x27;, Line 1163 - function run  -  Studio - LuauDispatcher:1163
+	Script &#x27;ServerScriptService.AST&#x27;, Line 3  -  Studio - AST:3
+	Stack End  -  Studio
+]]
+```
+
+:::note
+This library uses [FastSignal](https://devforum.roblox.com/t/fastsignal-a-consistent-signal-library/1360042) for connections.
+If you see the type ScriptSignal in these docs, think of a it the same as an RbxScriptSignal."><meta data-rh="true" property="og:description" content="Executes a Luau AST produced by [LuauParser](https://vantoanvh.github.io/LuauParser/).
+
+On average it is 10% faster than [vLuau](https://github.com/kosuke14/vLuau) and 108x slower than the native roblox engine.
+You can see better benchmark results on the [GitHub page](https://github.com/GoobisMoobis/LuauDispatcher)
+
+Example usage:
+```lua
+local Parser = require(path.to.LuauParser)
+local Dispatcher = require(path.to.LuauDispatcher)
+
+local parseOptions = {
+	-- any options you want to pass to Parser.parse
+	-- ex.
+	allowDeclarationSyntax = true,
+	noErrorLimit = true
+}
+local runtimeOptions = {
+	-- any options you want to pass to Dispatcher.run
+	-- if you do not pass in any options, the default options will be used
+	-- defaults:
+	allowEnvironmentModifications = true,
+	rawGlobalEnabled = true, -- this might be the one you consider disabling
+	overrideCertainGlobalsAtRuntime = true,
+	instructionLimit = 10000000,
+	noEnv = false,
+	allowConsoleOutput = true,
+}
+local code = [[
+	print(&quot;Hello, world!&quot;)
+]]
+
+local success, tree = Parser.parse(code, parseOptions)
+local completion = Dispatcher.run(tree, runtimeOptions)
+if completion.kind == &quot;Normal&quot; then
+	print(&quot;Success!&quot;)
+end
+```
+
+A benefit of LuauDispatcher is, in my opinion, it is a lot easier to interface with than something like vLuau.
+You can add new functions in [LuauDispatcher.globals] if you want the execution environment to have more methods to work with.
+Example:
+
+```lua
+Dispatcher.globals.foo = function()
+	print(&quot;foo&quot;)
+end
+
+local parseOptions = {
+	...
+}
+local runtimeOptions = {
+	...
+}
+local success, tree = Parser.parse(&quot;foo()&quot;, parseOptions)
+Dispatcher.run(tree, runtimeOptions)
+```
+
+Scripts also get access to `rawglobal(name, value)` which will add a global to the environment that will persist across all scripts.
+This can cause issues if you are not careful, so it can be disabled in the runtime options.
+
+Example:
+
+```lua
+local parseOptions = {
+	...
+}
+local runtimeOptions = {
+	...
+}
+local success, tree = Parser.parse(&#x27;rawglobal(&quot;foo&quot;, function() print(&quot;Hello, world!&quot;) end)&#x27;, parseOptions)
+Dispatcher.run(tree, runtimeOptions)
+
+success, tree = Parser.parse(&quot;foo()&quot;, parseOptions)
+Dispatcher.run(tree, runtimeOptions)
+```
+
+Error messages are also heavily customized to be easily readable so you can track the issue better.
+```lua
+local success, tree = Parser.parse(&quot;print(1 + 1&quot;, parseOptions)
+Dispatcher.run(tree, runtimeOptions)
+
+--[[
+	Output:
+	LuauDispatcher:1163: 
+	-----ERROR FOUND-----
+
+	Error 1/1
+	Expected &#x27;)&#x27; (to close &#x27;(&#x27; at column 6), got end of script/file
+	Location: line 1, column 12
+
+	-  Server - LuauError:40
+	Stack Begin  -  Studio
+	Script &#x27;ServerStorage.LuauDispatcher.LuauError&#x27;, Line 40 - function error  -  Studio - LuauError:40
+	Script &#x27;ServerStorage.LuauDispatcher&#x27;, Line 1163 - function run  -  Studio - LuauDispatcher:1163
+	Script &#x27;ServerScriptService.AST&#x27;, Line 3  -  Studio - AST:3
+	Stack End  -  Studio
+]]
+```
+
+:::note
+This library uses [FastSignal](https://devforum.roblox.com/t/fastsignal-a-consistent-signal-library/1360042) for connections.
+If you see the type ScriptSignal in these docs, think of a it the same as an RbxScriptSignal."><link data-rh="true" rel="icon" href="https://goobismoobis.com/assets/goobismoobis2logo.png"><link data-rh="true" rel="canonical" href="https://GoobisMoobis.github.io/LuauDispatcher/api/LuauDispatcher"><link data-rh="true" rel="alternate" href="https://GoobisMoobis.github.io/LuauDispatcher/api/LuauDispatcher" hreflang="en"><link data-rh="true" rel="alternate" href="https://GoobisMoobis.github.io/LuauDispatcher/api/LuauDispatcher" hreflang="x-default"><link rel="stylesheet" href="/LuauDispatcher/assets/css/styles.e8e96400.css">
+<script src="/LuauDispatcher/assets/js/runtime~main.bde50fa8.js" defer="defer"></script>
+<script src="/LuauDispatcher/assets/js/main.a0e9e87b.js" defer="defer"></script>
+</head>
+<body>
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/LuauDispatcher/"><b class="navbar__title text--truncate">LuauDispatcher</b></a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/LuauDispatcher/api/">API</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><a href="https://github.com/GoobisMoobis/LuauDispatcher" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"><div class="navbar__search"><span aria-label="expand searchbar" role="button" class="search-icon" tabindex="0"></span><input id="search_input_react" type="search" placeholder="Loading..." aria-label="Search" class="navbar__search-input search-bar" disabled=""></div></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0 docPageContainer_wNNk"><div class="docPage_Dpn1"><div class="docSidebarContainer_o_re"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" href="/LuauDispatcher/api/LuauDispatcher"><span title="​Luau​Dispatcher" class="linkLabel_WmDU">​Luau​Dispatcher</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/LuauDispatcher/api/LuauError"><span title="​Luau​Error" class="linkLabel_WmDU">​Luau​Error</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/LuauDispatcher/api/Runtime"><span title="​Runtime" class="linkLabel_WmDU">​Runtime</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/LuauDispatcher/api/Scope"><span title="​Scope" class="linkLabel_WmDU">​Scope</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/LuauDispatcher/api/Stringbuilder"><span title="​Stringbuilder" class="linkLabel_WmDU">​Stringbuilder</span></a></li></ul></nav></div></div><main class="docMainContainer_HJE1"><div class="container padding-vert--lg"><div class="row"><div class="col docItemCol_MU3C"><div class="docItemContainer_Wv98"><article><div class="member_J0w1 markdown"><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_oUs_"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><header><h1 class="docTitle_mZRt" style="text-decoration:none"><span style="display:inline-block">Luau</span><span style="display:inline-block">Dispatcher</span></h1><div class="luaClassTags_EipM"></div><div>
+<p>Executes a Luau AST produced by <a href="https://vantoanvh.github.io/LuauParser/">LuauParser</a>.</p>
+<p>
+  On average it is 10% faster than <a href="https://github.com/kosuke14/vLuau">vLuau</a> and 108x slower than the native roblox engine.
+  You can see better benchmark results on the <a href="https://github.com/GoobisMoobis/LuauDispatcher">GitHub page</a>
+</p>
+<p>Example usage:</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> Parser <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span>path<span class="token punctuation">.</span>to<span class="token punctuation">.</span>LuauParser<span class="token punctuation">)</span>
+<span class="token keyword">local</span> Dispatcher <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span>path<span class="token punctuation">.</span>to<span class="token punctuation">.</span>LuauDispatcher<span class="token punctuation">)</span>
+
+<span class="token keyword">local</span> parseOptions <span class="token operator">=</span> <span class="token punctuation">{</span>
+	<span class="token comment">-- any options you want to pass to Parser.parse</span>
+	<span class="token comment">-- ex.</span>
+	allowDeclarationSyntax <span class="token operator">=</span> <span class="token keyword">true</span><span class="token punctuation">,</span>
+	noErrorLimit <span class="token operator">=</span> <span class="token keyword">true</span>
+<span class="token punctuation">}</span>
+<span class="token keyword">local</span> runtimeOptions <span class="token operator">=</span> <span class="token punctuation">{</span>
+	<span class="token comment">-- any options you want to pass to Dispatcher.run</span>
+	<span class="token comment">-- if you do not pass in any options, the default options will be used</span>
+	<span class="token comment">-- defaults:</span>
+	allowEnvironmentModifications <span class="token operator">=</span> <span class="token keyword">true</span><span class="token punctuation">,</span>
+	rawGlobalEnabled <span class="token operator">=</span> <span class="token keyword">true</span><span class="token punctuation">,</span> <span class="token comment">-- this might be the one you consider disabling</span>
+	overrideCertainGlobalsAtRuntime <span class="token operator">=</span> <span class="token keyword">true</span><span class="token punctuation">,</span>
+	instructionLimit <span class="token operator">=</span> <span class="token number">10000000</span><span class="token punctuation">,</span>
+	noEnv <span class="token operator">=</span> <span class="token keyword">false</span><span class="token punctuation">,</span>
+	allowConsoleOutput <span class="token operator">=</span> <span class="token keyword">true</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span>
+<span class="token keyword">local</span> code <span class="token operator">=</span> <span class="token string">[[
+	print("Hello, world!")
+]]</span>
+
+<span class="token keyword">local</span> success<span class="token punctuation">,</span> tree <span class="token operator">=</span> Parser<span class="token punctuation">.</span><span class="token function">parse</span><span class="token punctuation">(</span>code<span class="token punctuation">,</span> parseOptions<span class="token punctuation">)</span>
+<span class="token keyword">local</span> completion <span class="token operator">=</span> Dispatcher<span class="token punctuation">.</span><span class="token function">run</span><span class="token punctuation">(</span>tree<span class="token punctuation">,</span> runtimeOptions<span class="token punctuation">)</span>
+<span class="token keyword">if</span> completion<span class="token punctuation">.</span>kind <span class="token operator">==</span> <span class="token string">"Normal"</span> <span class="token keyword">then</span>
+	<span class="token function">print</span><span class="token punctuation">(</span><span class="token string">"Success!"</span><span class="token punctuation">)</span>
+<span class="token keyword">end</span>
+</code></pre>
+<p>
+  A benefit of LuauDispatcher is, in my opinion, it is a lot easier to interface with than something like vLuau.
+  You can add new functions in <a href="/LuauDispatcher/api/LuauDispatcher#globals">LuauDispatcher.globals</a> if you want the execution environment to have more methods to work with.
+  Example:
+</p>
+<pre class="language-lua"><code class="language-lua">Dispatcher<span class="token punctuation">.</span>globals<span class="token punctuation">.</span>foo <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	<span class="token function">print</span><span class="token punctuation">(</span><span class="token string">"foo"</span><span class="token punctuation">)</span>
+<span class="token keyword">end</span>
+
+<span class="token keyword">local</span> parseOptions <span class="token operator">=</span> <span class="token punctuation">{</span>
+	<span class="token punctuation">...</span>
+<span class="token punctuation">}</span>
+<span class="token keyword">local</span> runtimeOptions <span class="token operator">=</span> <span class="token punctuation">{</span>
+	<span class="token punctuation">...</span>
+<span class="token punctuation">}</span>
+<span class="token keyword">local</span> success<span class="token punctuation">,</span> tree <span class="token operator">=</span> Parser<span class="token punctuation">.</span><span class="token function">parse</span><span class="token punctuation">(</span><span class="token string">"foo()"</span><span class="token punctuation">,</span> parseOptions<span class="token punctuation">)</span>
+Dispatcher<span class="token punctuation">.</span><span class="token function">run</span><span class="token punctuation">(</span>tree<span class="token punctuation">,</span> runtimeOptions<span class="token punctuation">)</span>
+</code></pre>
+<p>
+  Scripts also get access to <code>rawglobal(name, value)</code> which will add a global to the environment that will persist across all scripts.
+  This can cause issues if you are not careful, so it can be disabled in the runtime options.
+</p>
+<p>Example:</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> parseOptions <span class="token operator">=</span> <span class="token punctuation">{</span>
+	<span class="token punctuation">...</span>
+<span class="token punctuation">}</span>
+<span class="token keyword">local</span> runtimeOptions <span class="token operator">=</span> <span class="token punctuation">{</span>
+	<span class="token punctuation">...</span>
+<span class="token punctuation">}</span>
+<span class="token keyword">local</span> success<span class="token punctuation">,</span> tree <span class="token operator">=</span> Parser<span class="token punctuation">.</span><span class="token function">parse</span><span class="token punctuation">(</span><span class="token string">'rawglobal("foo", function() print("Hello, world!") end)'</span><span class="token punctuation">,</span> parseOptions<span class="token punctuation">)</span>
+Dispatcher<span class="token punctuation">.</span><span class="token function">run</span><span class="token punctuation">(</span>tree<span class="token punctuation">,</span> runtimeOptions<span class="token punctuation">)</span>
+
+success<span class="token punctuation">,</span> tree <span class="token operator">=</span> Parser<span class="token punctuation">.</span><span class="token function">parse</span><span class="token punctuation">(</span><span class="token string">"foo()"</span><span class="token punctuation">,</span> parseOptions<span class="token punctuation">)</span>
+Dispatcher<span class="token punctuation">.</span><span class="token function">run</span><span class="token punctuation">(</span>tree<span class="token punctuation">,</span> runtimeOptions<span class="token punctuation">)</span>
+</code></pre>
+<p>Error messages are also heavily customized to be easily readable so you can track the issue better.</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> success<span class="token punctuation">,</span> tree <span class="token operator">=</span> Parser<span class="token punctuation">.</span><span class="token function">parse</span><span class="token punctuation">(</span><span class="token string">"print(1 + 1"</span><span class="token punctuation">,</span> parseOptions<span class="token punctuation">)</span>
+Dispatcher<span class="token punctuation">.</span><span class="token function">run</span><span class="token punctuation">(</span>tree<span class="token punctuation">,</span> runtimeOptions<span class="token punctuation">)</span>
+
+<span class="token comment">--[[
+	Output:
+	LuauDispatcher:1163: 
+	-----ERROR FOUND-----
+
+	Error 1/1
+	Expected ')' (to close '(' at column 6), got end of script/file
+	Location: line 1, column 12
+
+	-  Server - LuauError:40
+	Stack Begin  -  Studio
+	Script 'ServerStorage.LuauDispatcher.LuauError', Line 40 - function error  -  Studio - LuauError:40
+	Script 'ServerStorage.LuauDispatcher', Line 1163 - function run  -  Studio - LuauDispatcher:1163
+	Script 'ServerScriptService.AST', Line 3  -  Studio - AST:3
+	Stack End  -  Studio
+]]</span>
+</code></pre>
+
+  
+    
+    
+      <div class="admonition admonition-note alert alert--secondary">
+        <div class="admonition-heading">
+          <h5><span class="admonition-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16">
+                <path d="M6.3 5.69a.942.942 0 0 1-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 0 1-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path>
+              </svg></span><span class="admonition-title">NOTE</span></h5>
+        </div>
+        <div class="admonition-content">
+          <p>
+            This library uses <a href="https://devforum.roblox.com/t/fastsignal-a-consistent-signal-library/1360042">FastSignal</a> for connections.
+            If you see the type ScriptSignal in these docs, think of a it the same as an RbxScriptSignal.
+          </p>
+        </div>
+      </div>
+    
+  
+
+</div></header><h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="types">Types<a href="#types" class="hash-link" aria-label="Direct link to Types" title="Direct link to Types" translate="no">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="Completion"><code style="text-decoration:none">Completion</code><a href="#Completion" class="hash-link" aria-label="Direct link to Completion" title="Direct link to Completion" translate="no">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/GoobisMoobis/LuauDispatcher/blob/master/src/LuauDispatcher.luau#L347"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">interface</code> <code>Completion<!-- --> <!-- -->{</code><div class="inset_uKQm"><div><code>kind<!-- -->: </code><code class="blue_P4bS">&quot;Normal&quot;</code><code class="op_lSLc"> | </code><code class="blue_P4bS">&quot;Return&quot;</code><code class="op_lSLc"> | </code><code class="blue_P4bS">&quot;Break&quot;</code><code class="op_lSLc"> | </code><code class="blue_P4bS">&quot;Continue&quot;</code></div><div><code>values<!-- -->: </code><code class="purple_ieR2">{</code><code class="blue_P4bS">any</code><code class="purple_ieR2">}</code><code class="blue_P4bS">?</code><span class="inlineDescription_G7Er">-- <span>
+<p>only present if kind == "Return"</p>
+</span></span></div></div><code>}</code></div><div>
+<p>Describes how a statement or a whole <a href="/LuauDispatcher/api/LuauDispatcher#run">LuauDispatcher.run</a> call finished.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="RuntimeOptions"><code style="text-decoration:none">RuntimeOptions</code><a href="#RuntimeOptions" class="hash-link" aria-label="Direct link to RuntimeOptions" title="Direct link to RuntimeOptions" translate="no">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/GoobisMoobis/LuauDispatcher/blob/master/src/LuauDispatcher.luau#L1251"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">interface</code> <code>RuntimeOptions<!-- --> <!-- -->{</code><div class="inset_uKQm"><div><code>rawGlobalEnabled<!-- -->: </code><code class="blue_P4bS">boolean?</code><span class="inlineDescription_G7Er">-- <span>
+<p>Allows scripts to use the <code>rawglobal(name, value)</code> function.</p>
+</span></span></div><div><code>overrideCertainGlobalsAtRuntime<!-- -->: </code><code class="blue_P4bS">boolean?</code><span class="inlineDescription_G7Er">-- <span>
+<p>Overrides <code>error</code>, <code>assert</code>, <code>warn</code>, <code>print</code>, and various methods from <code>game:GetService("TestService")</code></p>
+</span></span></div><div><code>noEnv<!-- -->: </code><code class="blue_P4bS">boolean?</code><span class="inlineDescription_G7Er">-- <span>
+<p>Runs the script without libs and functions from Dispatcher.globals</p>
+</span></span></div><div><code>instructionLimit<!-- -->: </code><code class="blue_P4bS">number?</code><span class="inlineDescription_G7Er">-- <span>
+<p>The maximum number of expressions/statements evaluated before stopping script execution (default 10,000,000).</p>
+</span></span></div><div><code>allowEnvironmentModifications<!-- -->: </code><code class="blue_P4bS">boolean?</code><span class="inlineDescription_G7Er">-- <span>
+<p>Allows scripts to overwrite globals in the environment.</p>
+</span></span></div><div><code>allowConsoleOutput<!-- -->: </code><code class="blue_P4bS">boolean?</code><span class="inlineDescription_G7Er">-- <span>
+<p>If true, output functions will be able to print to the Roblox console.</p>
+</span></span></div></div><code>}</code></div><div></div><h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="properties">Properties<a href="#properties" class="hash-link" aria-label="Direct link to Properties" title="Direct link to Properties" translate="no">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="RunningCount"><code style="text-decoration:none">RunningCount</code><a href="#RunningCount" class="hash-link" aria-label="Direct link to RunningCount" title="Direct link to RunningCount" translate="no">​</a></h3><span class="badge_Ba2I" style="color:#e74c3c"><span class="badgeTooltip_cWXP">This item is read only and cannot be modified.</span><span class="badgeToolTipTail_H9D_"><svg xmlns="http://www.w3.org/2000/svg" height="300px" width="300px" fill="#e74c3c" x="0px" y="0px" viewBox="0 0 96 96"><path d="M70.354,15.662h-7.496H25.566c-3.282,0-5.19-0.776-5.728-1.169v-1.456c0.538-0.393,2.445-1.168,5.728-1.168h46.479V8H25.566  c-4.776,0-9.594,1.468-9.594,4.747v61.458C15.972,86.645,20.328,88,37.495,88h42.535V15.662H70.354z"></path></svg> <!-- -->Read Only</span></span><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/GoobisMoobis/LuauDispatcher/blob/master/src/LuauDispatcher.luau#L136"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>LuauDispatcher<!-- -->.<!-- -->RunningCount<!-- -->:<!-- --> </code> <code class="blue_P4bS">number</code></div><div>
+<p>The number of ASTs currently executing inside <a href="/LuauDispatcher/api/LuauDispatcher#run">LuauDispatcher.run</a>.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="RunningStatusChanged"><code style="text-decoration:none">RunningStatusChanged</code><a href="#RunningStatusChanged" class="hash-link" aria-label="Direct link to RunningStatusChanged" title="Direct link to RunningStatusChanged" translate="no">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/GoobisMoobis/LuauDispatcher/blob/master/src/LuauDispatcher.luau#L149"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>LuauDispatcher<!-- -->.<!-- -->RunningStatusChanged<!-- -->:<!-- --> </code> <code class="blue_P4bS">ScriptSignal</code><code class="op_lSLc">&lt;</code><code class="blue_P4bS">boolean</code><code class="op_lSLc">&gt;</code></div><div>
+<pre class="language-lua"><code class="language-lua">Dispatcher<span class="token punctuation">.</span>RunningStatusChanged<span class="token punctuation">:</span><span class="token function">Connect</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span>isRunning<span class="token punctuation">)</span>
+	<span class="token function">print</span><span class="token punctuation">(</span>isRunning <span class="token keyword">and</span> <span class="token string">"started"</span> <span class="token keyword">or</span> <span class="token string">"stopped"</span><span class="token punctuation">)</span>
+<span class="token keyword">end</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Becomes true when running count reaches 0, and false when it goes above 0.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="LuauRan"><code style="text-decoration:none">LuauRan</code><a href="#LuauRan" class="hash-link" aria-label="Direct link to LuauRan" title="Direct link to LuauRan" translate="no">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/GoobisMoobis/LuauDispatcher/blob/master/src/LuauDispatcher.luau#L168"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>LuauDispatcher<!-- -->.<!-- -->LuauRan<!-- -->:<!-- --> </code> <code class="blue_P4bS">ScriptSignal</code><code class="op_lSLc">&lt;</code><code class="blue_P4bS">boolean,</code><code class="purple_ieR2">{</code><code class="blue_P4bS">any</code><code class="purple_ieR2">}</code><code class="op_lSLc">&gt;</code></div><div>
+<p>Fires after <a href="/LuauDispatcher/api/LuauDispatcher#run">LuauDispatcher.run</a> AST execution.</p>
+<pre class="language-lua"><code class="language-lua">Dispatcher<span class="token punctuation">.</span>LuauRan<span class="token punctuation">:</span><span class="token function">Connect</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span>success<span class="token punctuation">,</span> result<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> success <span class="token keyword">then</span>
+		<span class="token function">print</span><span class="token punctuation">(</span><span class="token string">"success"</span><span class="token punctuation">)</span>
+	<span class="token keyword">else</span>
+		<span class="token function">print</span><span class="token punctuation">(</span><span class="token string">"failed"</span><span class="token punctuation">)</span>
+	<span class="token keyword">end</span>
+<span class="token keyword">end</span><span class="token punctuation">)</span>
+</code></pre>
+<p><code>result</code> is the AST that was executed, or was attempted to be executed.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="UnhandledReturn"><code style="text-decoration:none">UnhandledReturn</code><a href="#UnhandledReturn" class="hash-link" aria-label="Direct link to UnhandledReturn" title="Direct link to UnhandledReturn" translate="no">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/GoobisMoobis/LuauDispatcher/blob/master/src/LuauDispatcher.luau#L187"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>LuauDispatcher<!-- -->.<!-- -->UnhandledReturn<!-- -->:<!-- --> </code> <code class="blue_P4bS">ScriptSignal</code><code class="op_lSLc">&lt;</code><code class="blue_P4bS">...any</code><code class="op_lSLc">&gt;</code></div><div>
+<p>Fires when a script returns at the top level (essentially returning a value to nothing)</p>
+<pre class="language-lua"><code class="language-lua">Dispatcher<span class="token punctuation">.</span>UnhandledReturn<span class="token punctuation">:</span><span class="token function">Connect</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">...</span><span class="token punctuation">)</span>
+	<span class="token function">print</span><span class="token punctuation">(</span><span class="token string">"returned"</span><span class="token punctuation">,</span> <span class="token function">select</span><span class="token punctuation">(</span><span class="token string">"#"</span><span class="token punctuation">,</span> <span class="token punctuation">...</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">"value(s):"</span><span class="token punctuation">,</span> <span class="token punctuation">...</span><span class="token punctuation">)</span>
+<span class="token keyword">end</span><span class="token punctuation">)</span>
+<span class="token keyword">local</span> options <span class="token operator">=</span> <span class="token punctuation">{</span> <span class="token punctuation">...</span> <span class="token punctuation">}</span>
+<span class="token keyword">local</span> success<span class="token punctuation">,</span> tree <span class="token operator">=</span> LuauParser<span class="token punctuation">.</span><span class="token function">parse</span><span class="token punctuation">(</span><span class="token string">"return 1"</span><span class="token punctuation">,</span> options<span class="token punctuation">)</span>
+Dispatcher<span class="token punctuation">.</span><span class="token function">run</span><span class="token punctuation">(</span>tree<span class="token punctuation">)</span>
+
+<span class="token comment">-- Output: returned 1 value(s): 1</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="Errored"><code style="text-decoration:none">Errored</code><a href="#Errored" class="hash-link" aria-label="Direct link to Errored" title="Direct link to Errored" translate="no">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/GoobisMoobis/LuauDispatcher/blob/master/src/LuauDispatcher.luau#L197"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>LuauDispatcher<!-- -->.<!-- -->Errored<!-- -->:<!-- --> </code> <code class="blue_P4bS">ScriptSignal</code><code class="op_lSLc">&lt;</code><code class="blue_P4bS">any</code><code class="op_lSLc">&gt;</code></div><div>
+<p>
+  Fires whenever a script throws an error.
+  It is recommended to disable allowConsoleOutput in <a href="/LuauDispatcher/api/LuauDispatcher#RuntimeOptions">RuntimeOptions</a> when using this connection.
+  The function that gets connected will receive the error message
+</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="Output"><code style="text-decoration:none">Output</code><a href="#Output" class="hash-link" aria-label="Direct link to Output" title="Direct link to Output" translate="no">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/GoobisMoobis/LuauDispatcher/blob/master/src/LuauDispatcher.luau#L212"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>LuauDispatcher<!-- -->.<!-- -->Output<!-- -->:<!-- --> </code> <code class="blue_P4bS">ScriptSignal</code><code class="op_lSLc">&lt;</code><code class="blue_P4bS">...any</code><code class="op_lSLc">&gt;</code></div><div>
+<p>
+  Fires whenever a script calls print.
+  The function that gets connected will receive any argument passed to the print function
+</p>
+<pre class="language-lua"><code class="language-lua">Dispatcher<span class="token punctuation">.</span>Output<span class="token punctuation">:</span><span class="token function">Connect</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">...</span><span class="token punctuation">)</span>
+	<span class="token function">print</span><span class="token punctuation">(</span><span class="token punctuation">...</span><span class="token punctuation">)</span> <span class="token comment">-- This code would actually be redundant, but it demonstrates the functionality</span>
+<span class="token keyword">end</span><span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="Warned"><code style="text-decoration:none">Warned</code><a href="#Warned" class="hash-link" aria-label="Direct link to Warned" title="Direct link to Warned" translate="no">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/GoobisMoobis/LuauDispatcher/blob/master/src/LuauDispatcher.luau#L220"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>LuauDispatcher<!-- -->.<!-- -->Warned<!-- -->:<!-- --> </code> <code class="blue_P4bS">ScriptSignal</code><code class="op_lSLc">&lt;</code><code class="blue_P4bS">...any</code><code class="op_lSLc">&gt;</code></div><div>
+<p>Like <a href="/LuauDispatcher/api/LuauDispatcher#Output">LuauDispatcher.Output</a>, but for warn.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="LuauError"><code style="text-decoration:none">LuauError</code><a href="#LuauError" class="hash-link" aria-label="Direct link to LuauError" title="Direct link to LuauError" translate="no">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/GoobisMoobis/LuauDispatcher/blob/master/src/LuauDispatcher.luau#L229"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>LuauDispatcher<!-- -->.<!-- -->LuauError<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/LuauDispatcher/api/LuauError">LuauError</a></code></div><div>
+<p>
+  The error-formatting module the Dispatcher uses.
+  You can call Dispatcher.LuauError.isErrors() on an AST to check if it has any issues.
+</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="globals"><code style="text-decoration:none">globals</code><a href="#globals" class="hash-link" aria-label="Direct link to globals" title="Direct link to globals" translate="no">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/GoobisMoobis/LuauDispatcher/blob/master/src/LuauDispatcher.luau#L248"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>LuauDispatcher<!-- -->.<!-- -->globals<!-- -->:<!-- --> </code> <code class="purple_ieR2">{</code><span><code>[</code><code class="blue_P4bS">string</code><code>]</code></span><code>: </code><code class="blue_P4bS">any</code><code class="purple_ieR2">}</code></div><div>
+<p>Add your own globals here (before running) to give them to scripts:</p>
+<pre class="language-lua"><code class="language-lua">Dispatcher<span class="token punctuation">.</span>globals<span class="token punctuation">.</span>MyApi <span class="token operator">=</span> MyApi
+</code></pre>
+<p>
+  You can also replace any globals, if you want to do that for some reason.
+  This will not work if trying to replace a console-printing function, such as warn, print, error, etc.
+  You should instead connect to <a href="/LuauDispatcher/api/LuauDispatcher#Output">LuauDispatcher.Output</a>, <a href="/LuauDispatcher/api/LuauDispatcher#Warned">LuauDispatcher.Warned</a>, or <a href="/LuauDispatcher/api/LuauDispatcher#Errored">LuauDispatcher.Errored</a>.
+</p>
+<p>
+  A script can also call the <code>rawglobal(name, value)</code> function to set a global that will stay in this table.
+  This can be disabled when running Dispatcher.run() by passing in an options table.
+</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="exprs"><code style="text-decoration:none">exprs</code><a href="#exprs" class="hash-link" aria-label="Direct link to exprs" title="Direct link to exprs" translate="no">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/GoobisMoobis/LuauDispatcher/blob/master/src/LuauDispatcher.luau#L764"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>LuauDispatcher<!-- -->.<!-- -->exprs<!-- -->:<!-- --> </code> <code class="purple_ieR2">{</code><span><code>[</code><code class="blue_P4bS">string</code><code>]</code></span><code>: </code><code class="green_DgR4">(</code><div class="inset_uKQm"><code>self<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/LuauDispatcher/api/Runtime">Runtime</a></code><code class="green_DgR4">,</code></div><div class="inset_uKQm"><code>node<!-- -->: </code><code class="blue_P4bS">any</code><code class="green_DgR4">,</code></div><div class="inset_uKQm"><code>scope<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/LuauDispatcher/api/Scope">Scope</a></code></div><code class="green_DgR4">)</code><code class="green_DgR4"> → </code><code class="blue_P4bS">...any</code><code class="purple_ieR2">}</code></div><div>
+<p>
+  Registry of expression handlers.
+  If you'd like to play with these, change them, or add more, you might want to better understand the <a href="/LuauDispatcher/api/Scope">Scope</a> library.
+</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="stats"><code style="text-decoration:none">stats</code><a href="#stats" class="hash-link" aria-label="Direct link to stats" title="Direct link to stats" translate="no">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/GoobisMoobis/LuauDispatcher/blob/master/src/LuauDispatcher.luau#L969"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>LuauDispatcher<!-- -->.<!-- -->stats<!-- -->:<!-- --> </code> <code class="purple_ieR2">{</code><span><code>[</code><code class="blue_P4bS">string</code><code>]</code></span><code>: </code><code class="green_DgR4">(</code><div class="inset_uKQm"><code>self<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/LuauDispatcher/api/Runtime">Runtime</a></code><code class="green_DgR4">,</code></div><div class="inset_uKQm"><code>node<!-- -->: </code><code class="blue_P4bS">any</code><code class="green_DgR4">,</code></div><div class="inset_uKQm"><code>scope<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/LuauDispatcher/api/Scope">Scope</a></code></div><code class="green_DgR4">)</code><code class="green_DgR4"> → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/LuauDispatcher/api/LuauDispatcher#Completion">Completion</a></code><code class="purple_ieR2">}</code></div><div>
+<p>Registry of statement handlers</p>
+</div><h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="functions">Functions<a href="#functions" class="hash-link" aria-label="Direct link to Functions" title="Direct link to Functions" translate="no">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="run"><code style="text-decoration:none">run</code><a href="#run" class="hash-link" aria-label="Direct link to run" title="Direct link to run" translate="no">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/GoobisMoobis/LuauDispatcher/blob/master/src/LuauDispatcher.luau#L1297"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>LuauDispatcher<!-- -->.</code><code class="green_DgR4">run</code><code>(</code><div class="inset_uKQm"><div><code>tree<!-- -->: </code><code class="blue_P4bS">any</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>a parsed tree from LuauParser</p>
+</span></span></div><div><code>options<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/LuauDispatcher/api/LuauDispatcher#RuntimeOptions">RuntimeOptions?</a></code><code>,</code></div><div><code>...<!-- -->: </code><code class="blue_P4bS">any</code><span class="inlineDescription_G7Er">-- <span>
+<p>Varargs passed to the script</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/LuauDispatcher/api/LuauDispatcher#Completion">Completion</a></code></div><div>
+<p>Executes a tree produced by LuauParser.</p>
+<p>
+  Returns a <a href="/LuauDispatcher/api/LuauDispatcher#Completion">Completion</a> describing how the script finished: <code>kind</code> is
+  <code>"Normal"</code> for a script that just ran, or <code>"Return"</code> if the script returned.
+  Alternatively you can specifically monitor for returns by connecting to <a href="/LuauDispatcher/api/LuauDispatcher#UnhandledReturn">LuauDispatcher.UnhandledReturn</a>.
+</p>
+<p>
+  Optionally, you can pass in an options table of type <a href="/LuauDispatcher/api/LuauDispatcher#RuntimeOptions">RuntimeOptions</a> to enable or disable specific parser features.
+  Default options:
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> runtimeOptions <span class="token operator">=</span> <span class="token punctuation">{</span>
+	allowEnvironmentModifications <span class="token operator">=</span> <span class="token keyword">true</span><span class="token punctuation">,</span>
+	rawGlobalEnabled <span class="token operator">=</span> <span class="token keyword">true</span><span class="token punctuation">,</span> <span class="token comment">-- this might be the one you consider disabling</span>
+	overrideCertainGlobalsAtRuntime <span class="token operator">=</span> <span class="token keyword">true</span><span class="token punctuation">,</span>
+	instructionLimit <span class="token operator">=</span> <span class="token number">10000000</span><span class="token punctuation">,</span>
+	noEnv <span class="token operator">=</span> <span class="token keyword">false</span><span class="token punctuation">,</span>
+	allowConsoleOutput <span class="token operator">=</span> <span class="token keyword">true</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>
+  You may also pass in arguments to the script by passing them in after the options table.
+  Ex.
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> success<span class="token punctuation">,</span> tree <span class="token operator">=</span> LuauParser<span class="token punctuation">.</span><span class="token function">parse</span><span class="token punctuation">(</span><span class="token string">[[
+	local msg1, msg2 = ...
+	print(msg1.." "..msg2)
+]]</span><span class="token punctuation">)</span>
+<span class="token keyword">local</span> completion <span class="token operator">=</span> Dispatcher<span class="token punctuation">.</span><span class="token function">run</span><span class="token punctuation">(</span>tree<span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token string">"Hello"</span><span class="token punctuation">,</span> <span class="token string">"World"</span><span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="evaluateNode"><code style="text-decoration:none">evaluateNode</code><a href="#evaluateNode" class="hash-link" aria-label="Direct link to evaluateNode" title="Direct link to evaluateNode" translate="no">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/GoobisMoobis/LuauDispatcher/blob/master/src/LuauDispatcher.luau#L1376"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>LuauDispatcher<!-- -->.</code><code class="green_DgR4">evaluateNode</code><code>(</code><div class="inset_uKQm"><div><code>node<!-- -->: </code><code class="blue_P4bS">AstNode</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>any single AST node</p>
+</span></span></div><div><code>scope<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/LuauDispatcher/api/Scope">Scope?</a></code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>an optional scope to evaluate within</p>
+</span></span></div><div><code>options<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/LuauDispatcher/api/LuauDispatcher#RuntimeOptions">RuntimeOptions?</a></code></div></div><code>) → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/LuauDispatcher/api/LuauDispatcher#Completion">Completion</a></code><code class="op_lSLc"> | </code><code class="blue_P4bS">...any</code></div><div>
+<p>Evaluates a <strong>single</strong> node.</p>
+
+  
+    
+    
+      <div class="admonition admonition-caution alert alert--warning">
+        <div class="admonition-heading">
+          <h5><span class="admonition-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                <path d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 0 0 0 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 0 0 .01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path>
+              </svg></span><span class="admonition-title">CAUTION</span></h5>
+        </div>
+        <div class="admonition-content">
+          <p>
+            Prefer <a href="/LuauDispatcher/api/LuauDispatcher#run">LuauDispatcher.run</a> whenever possible.
+            Unlike <a href="/LuauDispatcher/api/LuauDispatcher#run">LuauDispatcher.run</a>, this does <strong>not</strong> automatically check the tree for parse errors,
+            wrap execution in a <code>pcall</code>, update <a href="/LuauDispatcher/api/LuauDispatcher#RunningCount">LuauDispatcher.RunningCount</a>, or fire
+            <code>RunningStatusChanged</code>, <code>LuauRan</code>, or <code>UnhandledReturn</code>
+          </p>
+        </div>
+      </div>
+    
+  
+
+</div></div></article></div><details><summary>Show raw api</summary><pre style="max-width:100%;white-space:pre-wrap">{
+    &quot;functions&quot;: [
+        {
+            &quot;name&quot;: &quot;run&quot;,
+            &quot;desc&quot;: &quot;Executes a tree produced by LuauParser.\n\nReturns a [Completion] describing how the script finished: `kind` is\n`\&quot;Normal\&quot;` for a script that just ran, or `\&quot;Return\&quot;` if the script returned.\nAlternatively you can specifically monitor for returns by connecting to [LuauDispatcher.UnhandledReturn].\n\nOptionally, you can pass in an options table of type [RuntimeOptions] to enable or disable specific parser features.\nDefault options:\n```lua\nlocal runtimeOptions = {\n\tallowEnvironmentModifications = true,\n\trawGlobalEnabled = true, -- this might be the one you consider disabling\n\toverrideCertainGlobalsAtRuntime = true,\n\tinstructionLimit = 10000000,\n\tnoEnv = false,\n\tallowConsoleOutput = true,\n}\n```\n\nYou may also pass in arguments to the script by passing them in after the options table.\nEx.\n\n```lua\nlocal success, tree = LuauParser.parse([[\n\tlocal msg1, msg2 = ...\n\tprint(msg1..\&quot; \&quot;..msg2)\n]])\nlocal completion = Dispatcher.run(tree, {}, \&quot;Hello\&quot;, \&quot;World\&quot;)\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;tree&quot;,
+                    &quot;desc&quot;: &quot;a parsed tree from LuauParser&quot;,
+                    &quot;lua_type&quot;: &quot;any&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;options&quot;,
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;RuntimeOptions?&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;...&quot;,
+                    &quot;desc&quot;: &quot;Varargs passed to the script&quot;,
+                    &quot;lua_type&quot;: &quot;any&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;Completion&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 1297,
+                &quot;path&quot;: &quot;src/LuauDispatcher.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;evaluateNode&quot;,
+            &quot;desc&quot;: &quot;Evaluates a **single** node.\n\n:::caution\nPrefer [LuauDispatcher.run] whenever possible.\nUnlike [LuauDispatcher.run], this does **not** automatically check the tree for parse errors,\nwrap execution in a `pcall`, update [LuauDispatcher.RunningCount], or fire\n`RunningStatusChanged`, `LuauRan`, or `UnhandledReturn`&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;node&quot;,
+                    &quot;desc&quot;: &quot;any single AST node&quot;,
+                    &quot;lua_type&quot;: &quot;AstNode&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;scope&quot;,
+                    &quot;desc&quot;: &quot;an optional scope to evaluate within&quot;,
+                    &quot;lua_type&quot;: &quot;Scope?&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;options&quot;,
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;RuntimeOptions?&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;Completion | ...any&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 1376,
+                &quot;path&quot;: &quot;src/LuauDispatcher.luau&quot;
+            }
+        }
+    ],
+    &quot;properties&quot;: [
+        {
+            &quot;name&quot;: &quot;RunningCount&quot;,
+            &quot;desc&quot;: &quot;The number of ASTs currently executing inside [LuauDispatcher.run].&quot;,
+            &quot;lua_type&quot;: &quot;number&quot;,
+            &quot;readonly&quot;: true,
+            &quot;source&quot;: {
+                &quot;line&quot;: 136,
+                &quot;path&quot;: &quot;src/LuauDispatcher.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;RunningStatusChanged&quot;,
+            &quot;desc&quot;: &quot;```lua\nDispatcher.RunningStatusChanged:Connect(function(isRunning)\n\tprint(isRunning and \&quot;started\&quot; or \&quot;stopped\&quot;)\nend)\n```\nBecomes true when running count reaches 0, and false when it goes above 0.&quot;,
+            &quot;lua_type&quot;: &quot;ScriptSignal&lt;boolean&gt;&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 149,
+                &quot;path&quot;: &quot;src/LuauDispatcher.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;LuauRan&quot;,
+            &quot;desc&quot;: &quot;Fires after [LuauDispatcher.run] AST execution.\n```lua\nDispatcher.LuauRan:Connect(function(success, result)\n\tif success then\n\t\tprint(\&quot;success\&quot;)\n\telse\n\t\tprint(\&quot;failed\&quot;)\n\tend\nend)\n```\n\n`result` is the AST that was executed, or was attempted to be executed.&quot;,
+            &quot;lua_type&quot;: &quot;ScriptSignal&lt;boolean, { any }&gt;&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 168,
+                &quot;path&quot;: &quot;src/LuauDispatcher.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;UnhandledReturn&quot;,
+            &quot;desc&quot;: &quot;Fires when a script returns at the top level (essentially returning a value to nothing)\n\n```lua\nDispatcher.UnhandledReturn:Connect(function(...)\n\tprint(\&quot;returned\&quot;, select(\&quot;#\&quot;, ...), \&quot;value(s):\&quot;, ...)\nend)\nlocal options = { ... }\nlocal success, tree = LuauParser.parse(\&quot;return 1\&quot;, options)\nDispatcher.run(tree)\n\n-- Output: returned 1 value(s): 1\n```&quot;,
+            &quot;lua_type&quot;: &quot;ScriptSignal&lt;...any&gt;&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 187,
+                &quot;path&quot;: &quot;src/LuauDispatcher.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Errored&quot;,
+            &quot;desc&quot;: &quot;Fires whenever a script throws an error.\nIt is recommended to disable allowConsoleOutput in [RuntimeOptions] when using this connection.\nThe function that gets connected will receive the error message&quot;,
+            &quot;lua_type&quot;: &quot;ScriptSignal&lt;any&gt;&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 197,
+                &quot;path&quot;: &quot;src/LuauDispatcher.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Output&quot;,
+            &quot;desc&quot;: &quot;Fires whenever a script calls print.\nThe function that gets connected will receive any argument passed to the print function\n\n```lua\nDispatcher.Output:Connect(function(...)\n\tprint(...) -- This code would actually be redundant, but it demonstrates the functionality\nend)\n```&quot;,
+            &quot;lua_type&quot;: &quot;ScriptSignal&lt;...any&gt;&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 212,
+                &quot;path&quot;: &quot;src/LuauDispatcher.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Warned&quot;,
+            &quot;desc&quot;: &quot;Like [LuauDispatcher.Output], but for warn.&quot;,
+            &quot;lua_type&quot;: &quot;ScriptSignal&lt;...any&gt;&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 220,
+                &quot;path&quot;: &quot;src/LuauDispatcher.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;LuauError&quot;,
+            &quot;desc&quot;: &quot;The error-formatting module the Dispatcher uses.\nYou can call Dispatcher.LuauError.isErrors() on an AST to check if it has any issues.&quot;,
+            &quot;lua_type&quot;: &quot;LuauError&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 229,
+                &quot;path&quot;: &quot;src/LuauDispatcher.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;globals&quot;,
+            &quot;desc&quot;: &quot;Add your own globals here (before running) to give them to scripts:\n\n```lua\nDispatcher.globals.MyApi = MyApi\n```\n\nYou can also replace any globals, if you want to do that for some reason.\nThis will not work if trying to replace a console-printing function, such as warn, print, error, etc.\nYou should instead connect to [LuauDispatcher.Output], [LuauDispatcher.Warned], or [LuauDispatcher.Errored].\n\nA script can also call the `rawglobal(name, value)` function to set a global that will stay in this table.\nThis can be disabled when running Dispatcher.run() by passing in an options table.&quot;,
+            &quot;lua_type&quot;: &quot;{[string]: any}&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 248,
+                &quot;path&quot;: &quot;src/LuauDispatcher.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;exprs&quot;,
+            &quot;desc&quot;: &quot;Registry of expression handlers.\nIf you&#x27;d like to play with these, change them, or add more, you might want to better understand the [Scope] library.&quot;,
+            &quot;lua_type&quot;: &quot;{[string]: (self: Runtime, node: any, scope: Scope) -&gt; ...any}&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 764,
+                &quot;path&quot;: &quot;src/LuauDispatcher.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;stats&quot;,
+            &quot;desc&quot;: &quot;Registry of statement handlers&quot;,
+            &quot;lua_type&quot;: &quot;{[string]: (self: Runtime, node: any, scope: Scope) -&gt; Completion}&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 969,
+                &quot;path&quot;: &quot;src/LuauDispatcher.luau&quot;
+            }
+        }
+    ],
+    &quot;types&quot;: [
+        {
+            &quot;name&quot;: &quot;Completion&quot;,
+            &quot;desc&quot;: &quot;Describes how a statement or a whole [LuauDispatcher.run] call finished.&quot;,
+            &quot;fields&quot;: [
+                {
+                    &quot;name&quot;: &quot;kind&quot;,
+                    &quot;lua_type&quot;: &quot;\&quot;Normal\&quot; | \&quot;Return\&quot; | \&quot;Break\&quot; | \&quot;Continue\&quot;&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;values&quot;,
+                    &quot;lua_type&quot;: &quot;{ any }?&quot;,
+                    &quot;desc&quot;: &quot;only present if kind == \&quot;Return\&quot;&quot;
+                }
+            ],
+            &quot;source&quot;: {
+                &quot;line&quot;: 347,
+                &quot;path&quot;: &quot;src/LuauDispatcher.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;RuntimeOptions&quot;,
+            &quot;desc&quot;: &quot;&quot;,
+            &quot;fields&quot;: [
+                {
+                    &quot;name&quot;: &quot;rawGlobalEnabled&quot;,
+                    &quot;lua_type&quot;: &quot;boolean?&quot;,
+                    &quot;desc&quot;: &quot;Allows scripts to use the `rawglobal(name, value)` function.&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;overrideCertainGlobalsAtRuntime&quot;,
+                    &quot;lua_type&quot;: &quot;boolean?&quot;,
+                    &quot;desc&quot;: &quot;Overrides `error`, `assert`, `warn`, `print`, and various methods from `game:GetService(\&quot;TestService\&quot;)`&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;noEnv&quot;,
+                    &quot;lua_type&quot;: &quot;boolean?&quot;,
+                    &quot;desc&quot;: &quot;Runs the script without libs and functions from Dispatcher.globals&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;instructionLimit&quot;,
+                    &quot;lua_type&quot;: &quot;number?&quot;,
+                    &quot;desc&quot;: &quot;The maximum number of expressions/statements evaluated before stopping script execution (default 10,000,000).&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;allowEnvironmentModifications&quot;,
+                    &quot;lua_type&quot;: &quot;boolean?&quot;,
+                    &quot;desc&quot;: &quot;Allows scripts to overwrite globals in the environment.&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;allowConsoleOutput&quot;,
+                    &quot;lua_type&quot;: &quot;boolean?&quot;,
+                    &quot;desc&quot;: &quot;If true, output functions will be able to print to the Roblox console.&quot;
+                }
+            ],
+            &quot;source&quot;: {
+                &quot;line&quot;: 1251,
+                &quot;path&quot;: &quot;src/LuauDispatcher.luau&quot;
+            }
+        }
+    ],
+    &quot;name&quot;: &quot;LuauDispatcher&quot;,
+    &quot;desc&quot;: &quot;Executes a Luau AST produced by [LuauParser](https://vantoanvh.github.io/LuauParser/).\n\nOn average it is 10% faster than [vLuau](https://github.com/kosuke14/vLuau) and 108x slower than the native roblox engine.\nYou can see better benchmark results on the [GitHub page](https://github.com/GoobisMoobis/LuauDispatcher)\n\nExample usage:\n```lua\nlocal Parser = require(path.to.LuauParser)\nlocal Dispatcher = require(path.to.LuauDispatcher)\n\nlocal parseOptions = {\n\t-- any options you want to pass to Parser.parse\n\t-- ex.\n\tallowDeclarationSyntax = true,\n\tnoErrorLimit = true\n}\nlocal runtimeOptions = {\n\t-- any options you want to pass to Dispatcher.run\n\t-- if you do not pass in any options, the default options will be used\n\t-- defaults:\n\tallowEnvironmentModifications = true,\n\trawGlobalEnabled = true, -- this might be the one you consider disabling\n\toverrideCertainGlobalsAtRuntime = true,\n\tinstructionLimit = 10000000,\n\tnoEnv = false,\n\tallowConsoleOutput = true,\n}\nlocal code = [[\n\tprint(\&quot;Hello, world!\&quot;)\n]]\n\nlocal success, tree = Parser.parse(code, parseOptions)\nlocal completion = Dispatcher.run(tree, runtimeOptions)\nif completion.kind == \&quot;Normal\&quot; then\n\tprint(\&quot;Success!\&quot;)\nend\n```\n\nA benefit of LuauDispatcher is, in my opinion, it is a lot easier to interface with than something like vLuau.\nYou can add new functions in [LuauDispatcher.globals] if you want the execution environment to have more methods to work with.\nExample:\n\n```lua\nDispatcher.globals.foo = function()\n\tprint(\&quot;foo\&quot;)\nend\n\nlocal parseOptions = {\n\t...\n}\nlocal runtimeOptions = {\n\t...\n}\nlocal success, tree = Parser.parse(\&quot;foo()\&quot;, parseOptions)\nDispatcher.run(tree, runtimeOptions)\n```\n\nScripts also get access to `rawglobal(name, value)` which will add a global to the environment that will persist across all scripts.\nThis can cause issues if you are not careful, so it can be disabled in the runtime options.\n\nExample:\n\n```lua\nlocal parseOptions = {\n\t...\n}\nlocal runtimeOptions = {\n\t...\n}\nlocal success, tree = Parser.parse(&#x27;rawglobal(\&quot;foo\&quot;, function() print(\&quot;Hello, world!\&quot;) end)&#x27;, parseOptions)\nDispatcher.run(tree, runtimeOptions)\n\nsuccess, tree = Parser.parse(\&quot;foo()\&quot;, parseOptions)\nDispatcher.run(tree, runtimeOptions)\n```\n\nError messages are also heavily customized to be easily readable so you can track the issue better.\n```lua\nlocal success, tree = Parser.parse(\&quot;print(1 + 1\&quot;, parseOptions)\nDispatcher.run(tree, runtimeOptions)\n\n--[[\n\tOutput:\n\tLuauDispatcher:1163: \n\t-----ERROR FOUND-----\n\n\tError 1/1\n\tExpected &#x27;)&#x27; (to close &#x27;(&#x27; at column 6), got end of script/file\n\tLocation: line 1, column 12\n\n\t-  Server - LuauError:40\n\tStack Begin  -  Studio\n\tScript &#x27;ServerStorage.LuauDispatcher.LuauError&#x27;, Line 40 - function error  -  Studio - LuauError:40\n\tScript &#x27;ServerStorage.LuauDispatcher&#x27;, Line 1163 - function run  -  Studio - LuauDispatcher:1163\n\tScript &#x27;ServerScriptService.AST&#x27;, Line 3  -  Studio - AST:3\n\tStack End  -  Studio\n]]\n```\n\n:::note\nThis library uses [FastSignal](https://devforum.roblox.com/t/fastsignal-a-consistent-signal-library/1360042) for connections.\nIf you see the type ScriptSignal in these docs, think of a it the same as an RbxScriptSignal.&quot;,
+    &quot;source&quot;: {
+        &quot;line&quot;: 116,
+        &quot;path&quot;: &quot;src/LuauDispatcher.luau&quot;
+    }
+}</pre></details></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#types" class="table-of-contents__link toc-highlight">Types</a><ul><li><a href="#Completion" class="table-of-contents__link toc-highlight">Completion</a></li><li><a href="#RuntimeOptions" class="table-of-contents__link toc-highlight">RuntimeOptions</a></li></ul></li><li><a href="#properties" class="table-of-contents__link toc-highlight">Properties</a><ul><li><a href="#Errored" class="table-of-contents__link toc-highlight">Errored</a></li><li><a href="#exprs" class="table-of-contents__link toc-highlight">exprs</a></li><li><a href="#globals" class="table-of-contents__link toc-highlight">globals</a></li><li><a href="#LuauError" class="table-of-contents__link toc-highlight">LuauError</a></li><li><a href="#LuauRan" class="table-of-contents__link toc-highlight">LuauRan</a></li><li><a href="#Output" class="table-of-contents__link toc-highlight">Output</a></li><li><a href="#RunningCount" class="table-of-contents__link toc-highlight">RunningCount</a></li><li><a href="#RunningStatusChanged" class="table-of-contents__link toc-highlight">RunningStatusChanged</a></li><li><a href="#stats" class="table-of-contents__link toc-highlight">stats</a></li><li><a href="#UnhandledReturn" class="table-of-contents__link toc-highlight">UnhandledReturn</a></li><li><a href="#Warned" class="table-of-contents__link toc-highlight">Warned</a></li></ul></li><li><a href="#functions" class="table-of-contents__link toc-highlight">Functions</a><ul><li><a href="#evaluateNode" class="table-of-contents__link toc-highlight">.evaluateNode</a></li><li><a href="#run" class="table-of-contents__link toc-highlight">.run</a></li></ul></li></ul></div></div></div></div></main></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Links</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://goobismoobis.com/" target="_blank" rel="noopener noreferrer" class="footer__link-item">My Website<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://github.com/GoobisMoobis" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2026 GoobisMoobis. Built with Moonwave and Docusaurus</div></div></div></footer></div>
+</body>
+</html>
