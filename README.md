@@ -14,7 +14,12 @@ An AST executor, meant for use with [vantoanvh's LuauParser](https://github.com/
 
 Meant for use with LuauParser [v0.728](https://github.com/vantoanvh/LuauParser/releases/tag/v0.728)
 
+Check out the [Docs](https://goobismoobis.github.io/LuauDispatcher)
+
 # Benchmarks
+
+These benchmarks compare code execution between the native roblox engine, LuauDispatcher + LuauParser, and vLuau (the current most popular luau code environment)
+
 ```mermaid
 xychart-beta
     title "Native Roblox Engine (Lower is Better)"
@@ -56,7 +61,7 @@ xychart-beta
 ```
 
 | Test | Native (s) | Luau Executor (s) | vLuau (s) |
-|----------|-----------:|------------------:|----------:|
+| ---- | ---------: | ----------------: | --------: |
 | Arithmetic assignment loop (sum 1..1000) | 0.0000042049 | 0.0012328067 | 0.0009900933 |
 | Complex math expressions (100 iterations) | 0.0000216428 | 0.0007105800 | 0.0014142333 |
 | Recursive Fibonacci (15) | 0.0000358881 | 0.0067096533 | 0.0043807200 |
@@ -69,4 +74,5 @@ Compared to vLuau, LuauParser + LuauDispatcher is almost always faster, however 
 Choosing the right one for your usecase is a personal choice. If you want something tried-and-true that is consistant and easy, go with vLuau. If you want a much smaller module that has performance improvements but may be inconsistant, use LuauDispatcher + LuauParser.
 
 # Contribute
-Download the package from [Releases](https://github.com/GoobisMoobis/LuauDispatcher/releases/latest) and import it into Roblox. You can also download everything individually from 
+
+Download the package from [Releases](https://github.com/GoobisMoobis/LuauDispatcher/releases/latest) and import it into Roblox. You can also download everything individually from [trueSrc](https://github.com/GoobisMoobis/LuauDispatcher/tree/main/trueSrc) however it's much harder because this is my first time uploading a package that I intend the general public to use. Most of the time I use my own system.
