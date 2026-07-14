@@ -14,7 +14,9 @@ An AST executor, meant for use with [vantoanvh's LuauParser](https://github.com/
 
 Meant for use with LuauParser [v0.728](https://github.com/vantoanvh/LuauParser/releases/tag/v0.728)
 
-Check out the [Docs](https://goobismoobis.github.io/LuauDispatcher)
+Check out the [Docs](https://goobismoobis.github.io/LuauDispatcher)!
+
+If you'd like an easy way to make use of this library check out [LuauExecutor](https://github.com/GoobisMoobis/LuauExecutor/)!
 
 # Benchmarks
 
