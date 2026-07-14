@@ -1,1 +1,0 @@
--- https://github.com/RBLXUtils/FastSignal/releases/tag/10.4.0
