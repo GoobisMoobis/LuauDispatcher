@@ -22,45 +22,13 @@ If you'd like an easy way to make use of this library check out [LuauExecutor](h
 
 These benchmarks compare code execution between the native roblox engine, LuauDispatcher + LuauParser, and vLuau (the current most popular luau code environment)
 
-```mermaid
-xychart-beta
-    title "Native Roblox Engine (Lower is Better)"
-    x-axis ["Sum Loop", "Complex Math", "Fib(15)", "Conditionals", "Array fill+sum", "Dict Mutation"]
-    y-axis "Time (ms)" 0.0 --> 7.0
-    
-    bar "Native Luau" [0.00, 0.02, 0.04, 0.00, 0.01, 0.02]
-    bar "Native Luau" [0.00, 0.02, 0.04, 0.00, 0.01, 0.02]
-```
+![Native Engine Benchmark Chart](https://raw.githubusercontent.com/GoobisMoobis/LuauDispatcher/refs/heads/main/NRE_ToScale.png)
 
-```mermaid
-xychart-beta
-    title "Native Roblox Engine (99.29% Smaller Scale)"
-    x-axis ["Sum Loop", "Complex Math", "Fib(15)", "Conditionals", "Array fill+sum", "Dict Mutation"]
-    y-axis "Time (ms)" 0.0 --> 0.05
-    
-    bar "Native Luau" [0.00, 0.02, 0.04, 0.00, 0.01, 0.02]
-    bar "Native Luau" [0.00, 0.02, 0.04, 0.00, 0.01, 0.02]
-```
+![NE Diff Scale Benchmark Chart](https://raw.githubusercontent.com/GoobisMoobis/LuauDispatcher/refs/heads/main/NRE_SizeUp.png)
 
-```mermaid
-xychart-beta
-    title "vLuau (Lower is Better)"
-    x-axis ["Sum Loop", "Complex Math", "Fib(15)", "Conditionals", "Array fill+sum", "Dict Mutation"]
-    y-axis "Time (ms)" 0.0 --> 7.0
-    
-    bar "vLuau" [0.99, 1.41, 4.38, 1.93, 1.29, 1.45]
-    bar "vLuau" [0.99, 1.41, 4.38, 1.93, 1.29, 1.45]
-```
+![vLuau Benchmark Chart](https://raw.githubusercontent.com/GoobisMoobis/LuauDispatcher/refs/heads/main/vLuau.png)
 
-```mermaid
-xychart-beta
-    title "LuauParser + LuauDispatcher (Lower is Better)"
-    x-axis ["Sum Loop", "Complex Math", "Fib(15)", "Conditionals", "Array fill+sum", "Dict Mutation"]
-    y-axis "Time (ms)" 0.0 --> 7.0
-    
-    bar "LuauExecutor" [1.23, 0.71, 6.71, 0.91, 0.98, 0.53]
-    bar "LuauExecutor" [1.23, 0.71, 6.71, 0.91, 0.98, 0.53]
-```
+![LuauExecutor Benchmark Chart](https://raw.githubusercontent.com/GoobisMoobis/LuauDispatcher/refs/heads/main/LuauExecutor.png)
 
 | Test | Native (s) | Luau Executor (s) | vLuau (s) |
 | ---- | ---------: | ----------------: | --------: |
