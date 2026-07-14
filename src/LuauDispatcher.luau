@@ -1334,22 +1334,27 @@ function Dispatcher.run(tree, options: RuntimeOptions?, ...): Completion
 	end
 
 	if not ok then
+		result = result :: string
 		Dispatcher.Errored:Fire(result)
 		Dispatcher.LuauRan:Fire(false, tree)
 		if not opts.allowConsoleOutput then
 			return
 		end
-		error(
-			tostring(Dispatcher.LuauError.CustomError({
-				{
-					message = result,
-					location = {
-						notKnown = true,
+		if not result:find("-----ERROR") then
+			error(
+				tostring(Dispatcher.LuauError.CustomError({
+					{
+						message = result,
+						location = {
+							notKnown = true,
+						},
 					},
-				},
-			})),
-			2
-		)
+				})),
+				2
+			)
+		else
+			error(result, 2)
+		end
 	end
 
 	local completion = result

@@ -48,9 +48,9 @@ function LuauError.error(tree)
 
 		local linesDifferent = start.line ~= finish.line
 		local columnsDifferent = start.column ~= finish.column
-		consoleMsg:appendln(`Error {index}/{#tree.errors}`)
-		consoleMsg:appendln(msg)
-		consoleMsg:appendln(
+		consoleMsg:appendLn(`Error {index}/{#tree.errors}`)
+		consoleMsg:appendLn(msg)
+		consoleMsg:appendLn(
 			string.format(
 				"Location: line%s %d%s, column%s %d%s",
 				linesDifferent and "s" or "",
@@ -113,17 +113,17 @@ export type ErrorTable = {
 function LuauError.CustomError(errs: { ErrorTable }, msg: string?): typeof(Stringbuilder.new())
 	local label = msg or "Error"
 	local consoleMsg = Stringbuilder.new()
-	consoleMsg:appendlnbefore(`-----{string.upper(label)}{#errs ~= 1 and "S" or ""} FOUND-----`)
+	consoleMsg:appendLnBefore(`-----{string.upper(label)}{#errs ~= 1 and "S" or ""} FOUND-----`)
 	consoleMsg:appendNewLines(2)
 
 	for index, err in ipairs(errs) do
 		local location = err.location
 
-		consoleMsg:appendln(`{label} {index}/{#errs}`)
-		consoleMsg:appendln(err.message)
+		consoleMsg:appendLn(`{label} {index}/{#errs}`)
+		consoleMsg:appendLn(err.message)
 
 		if location.notKnown then
-			consoleMsg:appendln("Location: Unknown! (Check the Roblox traceback)")
+			consoleMsg:appendLn("Location: Unknown! (Check the Roblox traceback)")
 		else
 			local start = location.begin
 			local finish = location.end_
@@ -131,7 +131,7 @@ function LuauError.CustomError(errs: { ErrorTable }, msg: string?): typeof(Strin
 			local linesDifferent = start.line ~= finish.line
 			local columnsDifferent = start.column ~= finish.column
 
-			consoleMsg:appendln(
+			consoleMsg:appendLn(
 				string.format(
 					"Location: line%s %d%s, column%s %d%s",
 					linesDifferent and "s" or "",
