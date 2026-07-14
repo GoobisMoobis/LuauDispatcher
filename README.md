@@ -67,3 +67,6 @@ xychart-beta
 Compared to vLuau, LuauParser + LuauDispatcher is almost always faster, however it slows down extremely on large reccursive functions and long for loops. In general, vLuau is more consistant.
 
 Choosing the right one for your usecase is a personal choice. If you want something tried-and-true that is consistant and easy, go with vLuau. If you want a much smaller module that has performance improvements but may be inconsistant, use LuauDispatcher + LuauParser.
+
+# Contribute
+Download the package from [Releases](https://github.com/GoobisMoobis/LuauDispatcher/releases/latest) and import it into Roblox. You can also download everything individually from 
